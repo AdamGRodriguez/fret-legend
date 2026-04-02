@@ -221,15 +221,23 @@ function sA(){if(currentTrack){try{currentTrack.pause();currentTrack.src='';curr
 
 /* Menu music — play Arena quietly on loop */
 function startMenuMusic(){
+  stopMenuMusic(); /* always stop first to prevent doubles */
   try{
     menuTrack=new Audio(AUDIO_FILES['arena']);
     menuTrack.volume=0.06;
     menuTrack.loop=true;
     const p=menuTrack.play();
-    if(p)p.catch(e=>console.warn('Menu music blocked:',e));
+    if(p)p.catch(e=>{});
   }catch(e){}
 }
-function stopMenuMusic(){if(menuTrack){try{menuTrack.pause();menuTrack.src='';menuTrack=null;}catch(e){}}}
+function stopMenuMusic(){
+  if(menuTrack){
+    try{menuTrack.pause();}catch(e){}
+    try{menuTrack.src='';}catch(e){}
+    try{menuTrack.load();}catch(e){} /* force release */
+    menuTrack=null;
+  }
+}
 
 /* SYNTH FALLBACK BEAT */
 let beatIv,beatN=0;
@@ -303,16 +311,16 @@ readyEl.style.opacity='0';
 await new Promise(r=>setTimeout(r,300));
 readyEl.remove();
 /* 3-2-1 countdown on fretboard */
+stopMenuMusic(); /* kill menu music immediately before countdown */
 let c=3;const ce=document.createElement('div');ce.style.cssText='position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);font-family:Bebas Neue;font-size:90px;color:#ffea00;z-index:20;text-shadow:0 0 30px rgba(255,234,0,.4);pointer-events:none';ap.appendChild(ce);
 await new Promise(rs=>{const cd=setInterval(()=>{ce.textContent=c;ce.style.animation='none';ce.offsetHeight;ce.style.animation='fp .55s ease forwards';c--;if(c<0){clearInterval(cd);ce.remove();rs();}},650);});
-stopMenuMusic();
 G.p=true;
-/* 3-second lead-in: offset all note times so first notes are visible falling */
+/* 3-second lead-in: notes fall in silence, then music starts when first note hits */
 const LEAD_IN=3000;
 G.td=G.td.map(n=>[n[0]+LEAD_IN,n[1],n[2]]);
 G.du=G.du+(LEAD_IN/1000);
 G.ss=performance.now();
-/* Delay audio to match the note offset — resume AudioContext first (mobile requirement) */
+/* Music starts after lead-in — exactly when first notes reach the strike zone */
 G.audioTimeout=setTimeout(()=>{if(!G.p||G.paused)return;if(ax&&ax.state==='suspended')ax.resume();if(!pA(tk))startSynthBeat(140);},LEAD_IN);
 uH();lp();}
 function eG(){G.p=false;sA();stopSynthBeat();if(G.audioTimeout)clearTimeout(G.audioTimeout);cancelAnimationFrame(rf);G.ac.forEach(n=>n.e.remove());G.ac=[];const hc2=G.h.p+G.h.g+G.h.gd,ac=G.tn>0?(hc2/G.tn)*100:0;let gr,gc;if(ac>=95){gr='S';gc='#ffea00';}else if(ac>=85){gr='A';gc='#00e676';}else if(ac>=70){gr='B';gc='#2979ff';}else if(ac>=55){gr='C';gc='#ff9100';}else{gr='D';gc='#ff1744';}$('rg').textContent=gr;$('rg').style.color=gc;$('rs').textContent=G.sc.toLocaleString();$('rp').textContent=G.h.p;$('rgt').textContent=G.h.g;$('rgd').textContent=G.h.gd;$('rm').textContent=G.h.m;$('rc').textContent=G.mx;$('ra').textContent=Math.round(ac)+'%';sS('results-screen');}
