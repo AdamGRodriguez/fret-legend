@@ -305,11 +305,16 @@ readyEl.remove();
 let c=3;const ce=document.createElement('div');ce.style.cssText='position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);font-family:Bebas Neue;font-size:90px;color:#ffea00;z-index:20;text-shadow:0 0 30px rgba(255,234,0,.4);pointer-events:none';ap.appendChild(ce);
 await new Promise(rs=>{const cd=setInterval(()=>{ce.textContent=c;ce.style.animation='none';ce.offsetHeight;ce.style.animation='fp .55s ease forwards';c--;if(c<0){clearInterval(cd);ce.remove();rs();}},650);});
 stopMenuMusic();
-G.p=true;G.ss=performance.now();
-/* Try real audio, fall back to synth beat */
-if(!pA(tk))startSynthBeat(140);
+G.p=true;
+/* 3-second lead-in: offset all note times so first notes are visible falling */
+const LEAD_IN=3000;
+G.td=G.td.map(n=>[n[0]+LEAD_IN,n[1],n[2]]);
+G.du=G.du+(LEAD_IN/1000);
+G.ss=performance.now();
+/* Delay audio to match the note offset */
+G.audioTimeout=setTimeout(()=>{if(G.p&&!G.paused){if(!pA(tk))startSynthBeat(140);}},LEAD_IN);
 uH();lp();}
-function eG(){G.p=false;sA();stopSynthBeat();cancelAnimationFrame(rf);G.ac.forEach(n=>n.e.remove());G.ac=[];const hc2=G.h.p+G.h.g+G.h.gd,ac=G.tn>0?(hc2/G.tn)*100:0;let gr,gc;if(ac>=95){gr='S';gc='#ffea00';}else if(ac>=85){gr='A';gc='#00e676';}else if(ac>=70){gr='B';gc='#2979ff';}else if(ac>=55){gr='C';gc='#ff9100';}else{gr='D';gc='#ff1744';}$('rg').textContent=gr;$('rg').style.color=gc;$('rs').textContent=G.sc.toLocaleString();$('rp').textContent=G.h.p;$('rgt').textContent=G.h.g;$('rgd').textContent=G.h.gd;$('rm').textContent=G.h.m;$('rc').textContent=G.mx;$('ra').textContent=Math.round(ac)+'%';sS('results-screen');}
+function eG(){G.p=false;sA();stopSynthBeat();if(G.audioTimeout)clearTimeout(G.audioTimeout);cancelAnimationFrame(rf);G.ac.forEach(n=>n.e.remove());G.ac=[];const hc2=G.h.p+G.h.g+G.h.gd,ac=G.tn>0?(hc2/G.tn)*100:0;let gr,gc;if(ac>=95){gr='S';gc='#ffea00';}else if(ac>=85){gr='A';gc='#00e676';}else if(ac>=70){gr='B';gc='#2979ff';}else if(ac>=55){gr='C';gc='#ff9100';}else{gr='D';gc='#ff1744';}$('rg').textContent=gr;$('rg').style.color=gc;$('rs').textContent=G.sc.toLocaleString();$('rp').textContent=G.h.p;$('rgt').textContent=G.h.g;$('rgd').textContent=G.h.gd;$('rm').textContent=G.h.m;$('rc').textContent=G.mx;$('ra').textContent=Math.round(ac)+'%';sS('results-screen');}
 
 $('fboard').addEventListener('touchstart',e=>{if(!G.p||G.paused)return;e.preventDefault();const r=$('fboard').getBoundingClientRect(),w=r.width/4;for(const t of e.changedTouches)hN(Math.min(3,Math.max(0,Math.floor((t.clientX-r.left)/w))));},{passive:false});
 $('hz').addEventListener('touchstart',e=>{if(!G.p||G.paused)return;e.preventDefault();const r=$('hz').getBoundingClientRect(),w=r.width/4;for(const t of e.changedTouches)hN(Math.min(3,Math.max(0,Math.floor((t.clientX-r.left)/w))));},{passive:false});
@@ -323,6 +328,7 @@ function pauseGame(){
   G.pauseStart=performance.now();
   cancelAnimationFrame(rf);
   sA();stopSynthBeat();
+  if(G.audioTimeout)clearTimeout(G.audioTimeout);
   G.songElapsed=(G.pauseStart-G.ss)/1000;
   $('pause-overlay').classList.add('active');
 }
@@ -340,7 +346,8 @@ function resumeGame(){
 function quitToMenu(){
   G.paused=false;G.p=false;
   $('pause-overlay').classList.remove('active');
-  sA();stopSynthBeat();cancelAnimationFrame(rf);
+  sA();stopSynthBeat();if(G.audioTimeout)clearTimeout(G.audioTimeout);
+  cancelAnimationFrame(rf);
   G.ac.forEach(n=>n.e.remove());G.ac=[];
   sS('title-screen');startMenuMusic();
 }
