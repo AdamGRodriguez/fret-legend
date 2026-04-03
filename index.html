@@ -284,13 +284,8 @@ function uH(){$('sc').textContent=G.sc.toLocaleString();$('cv').textContent=G.co
 function lp(){if(!G.p)return;const nw=performance.now(),st=nw-G.ss,hy=hY(),ld=(hy/(G.ns*60))*1000;if(G.lo&&nw-G.lt>8000){G.lo=false;$('lpa').classList.remove('act');$('lpa').textContent='POWER';$('lpb').classList.remove('full');$('hb').style.background='linear-gradient(90deg,var(--c1),var(--c2),var(--c3),var(--c4))';$('hb').style.boxShadow='0 0 8px rgba(255,255,255,.1)';document.querySelectorAll('.note.gold').forEach(n=>n.classList.remove('gold'));uH();}while(G.ni<G.td.length){const nd=G.td[G.ni];if(nd[0]-st>ld)break;spN(nd[1],nd[0],nd[2]||false);G.ni++;}for(let i=G.ac.length-1;i>=0;i--){const n=G.ac[i];if(n.h||n.m){G.ac.splice(i,1);continue;}const y=hy+((st-n.t)*G.ns*60/1000);n.e.style.top=(y-11)+'px';if(y>hy+70){mN(n);G.ac.splice(i,1);}}uF(st);$('pr').style.width=Math.min(100,(st/(G.du*1000))*100)+'%';if(st>G.du*1000+2000){eG();return;}rf=requestAnimationFrame(lp);}
 function sS(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
 async function sG(tk){R();iax();G.tk=tk;
-/* CRITICAL: Start game audio NOW at volume 0, before any awaits, to satisfy mobile gesture requirement */
+/* Stop menu music immediately on track tap */
 stopMenuMusic();sA();
-const gameAudio=new Audio(AUDIO_FILES[tk]);
-gameAudio.volume=0;
-gameAudio.preload='auto';
-try{const pp=gameAudio.play();if(pp)pp.catch(e=>{});}catch(e){}
-currentTrack=gameAudio;
 
 const df=document.querySelector('.dp.sel')?.dataset.d||'medium';const b=T[tk];let ns=b.notes.map(n=>[...n]);switch(df){case'easy':G.ns=2.0;ns=ns.filter((_,i)=>i%3===0);break;case'hard':G.ns=4.8;const ex=[];for(let i=0;i<ns.length-1;i++){ex.push(ns[i]);if(ns[i+1][0]-ns[i][0]>400&&Math.random()<.25)ex.push([Math.round((ns[i][0]+ns[i+1][0])/2),(ns[i][1]+2)%4]);}ex.push(ns[ns.length-1]);ns=ex;break;default:G.ns=3.2;ns=ns.filter((_,i)=>i%3!==2);}for(let i=0;i<ns.length;i++){if(i%20<4&&i%20===0){for(let j=i;j<Math.min(i+4,ns.length);j++)ns[j][2]=true;}}/* Limit to 90 seconds */ns=ns.filter(n=>n[0]<=90000);G.td=ns;G.tn=ns.length;G.du=Math.min(b.d,90);
 /* INTRO SEQUENCE: Character on stage -> track name -> pan to fretboard -> PLAYER READY? -> 3-2-1 */
@@ -322,15 +317,15 @@ readyEl.remove();
 let c=3;const ce=document.createElement('div');ce.style.cssText='position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);font-family:Bebas Neue;font-size:90px;color:#ffea00;z-index:20;text-shadow:0 0 30px rgba(255,234,0,.4);pointer-events:none';ap.appendChild(ce);
 await new Promise(rs=>{const cd=setInterval(()=>{ce.textContent=c;ce.style.animation='none';ce.offsetHeight;ce.style.animation='fp .55s ease forwards';c--;if(c<0){clearInterval(cd);ce.remove();rs();}},650);});
 G.p=true;
-/* 3-second lead-in: notes offset by 3s, music was already playing silently — restart and unmute now */
+/* 3-second lead-in with delayed audio start (the approach that was working) */
 const LEAD_IN=3000;
 G.td=G.td.map(n=>[n[0]+LEAD_IN,n[1],n[2]]);
 G.du=G.du+(LEAD_IN/1000);
 G.ss=performance.now();
-/* Restart track from beginning at full volume */
-if(currentTrack){try{currentTrack.currentTime=0;currentTrack.volume=1;}catch(e){}}
+/* Start audio after lead-in delay */
+G.audioTimeout=setTimeout(()=>{if(!G.p||G.paused)return;pA(tk);},LEAD_IN);
 uH();lp();}
-function eG(){G.p=false;sA();stopSynthBeat();cancelAnimationFrame(rf);G.ac.forEach(n=>n.e.remove());G.ac=[];const hc2=G.h.p+G.h.g+G.h.gd,ac=G.tn>0?(hc2/G.tn)*100:0;let gr,gc;if(ac>=95){gr='S';gc='#ffea00';}else if(ac>=85){gr='A';gc='#00e676';}else if(ac>=70){gr='B';gc='#2979ff';}else if(ac>=55){gr='C';gc='#ff9100';}else{gr='D';gc='#ff1744';}$('rg').textContent=gr;$('rg').style.color=gc;$('rs').textContent=G.sc.toLocaleString();$('rp').textContent=G.h.p;$('rgt').textContent=G.h.g;$('rgd').textContent=G.h.gd;$('rm').textContent=G.h.m;$('rc').textContent=G.mx;$('ra').textContent=Math.round(ac)+'%';sS('results-screen');showScoreboard(G.tk,G.sc);}
+function eG(){G.p=false;sA();stopSynthBeat();if(G.audioTimeout)clearTimeout(G.audioTimeout);cancelAnimationFrame(rf);G.ac.forEach(n=>n.e.remove());G.ac=[];const hc2=G.h.p+G.h.g+G.h.gd,ac=G.tn>0?(hc2/G.tn)*100:0;let gr,gc;if(ac>=95){gr='S';gc='#ffea00';}else if(ac>=85){gr='A';gc='#00e676';}else if(ac>=70){gr='B';gc='#2979ff';}else if(ac>=55){gr='C';gc='#ff9100';}else{gr='D';gc='#ff1744';}$('rg').textContent=gr;$('rg').style.color=gc;$('rs').textContent=G.sc.toLocaleString();$('rp').textContent=G.h.p;$('rgt').textContent=G.h.g;$('rgd').textContent=G.h.gd;$('rm').textContent=G.h.m;$('rc').textContent=G.mx;$('ra').textContent=Math.round(ac)+'%';sS('results-screen');showScoreboard(G.tk,G.sc);}
 
 /* HIGH SCORE SYSTEM */
 function getScores(tk){try{return JSON.parse(localStorage.getItem('fl_scores_'+tk)||'[]');}catch(e){return[];}}
@@ -372,9 +367,9 @@ function pauseGame(){
   G.paused=true;
   G.pauseStart=performance.now();
   cancelAnimationFrame(rf);
-  /* Pause track audio */
   if(currentTrack)try{currentTrack.pause();}catch(e){}
   stopSynthBeat();
+  if(G.audioTimeout)clearTimeout(G.audioTimeout);
   G.songElapsed=(G.pauseStart-G.ss)/1000;
   $('pause-overlay').classList.add('active');
 }
@@ -385,14 +380,20 @@ function resumeGame(){
   const pauseDuration=performance.now()-G.pauseStart;
   G.ss+=pauseDuration;
   if(G.lo)G.lt+=pauseDuration;
-  /* Resume track audio */
+  /* Resume track audio, or reschedule if paused during lead-in */
   if(currentTrack){try{currentTrack.play();}catch(e){}}
+  else{
+    const elapsed=G.songElapsed*1000;const remaining=3000-elapsed;
+    if(remaining>0){G.audioTimeout=setTimeout(()=>{if(!G.p||G.paused)return;pA(G.tk);},remaining);}
+    else{pA(G.tk,(elapsed-3000)/1000);}
+  }
   lp();
 }
 function quitToMenu(){
   G.paused=false;G.p=false;
   $('pause-overlay').classList.remove('active');
-  sA();stopSynthBeat();cancelAnimationFrame(rf);
+  sA();stopSynthBeat();if(G.audioTimeout)clearTimeout(G.audioTimeout);
+  cancelAnimationFrame(rf);
   G.ac.forEach(n=>n.e.remove());G.ac=[];
   sS('title-screen');startMenuMusic();
 }
