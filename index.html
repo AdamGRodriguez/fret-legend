@@ -311,6 +311,12 @@ await new Promise(r=>setTimeout(r,300));
 readyEl.remove();
 /* 3-2-1 countdown on fretboard */
 stopMenuMusic(); /* kill menu music immediately before countdown */
+/* Pre-create the audio element NOW while user gesture is still active (mobile requirement) */
+sA();
+const gameAudio=new Audio(AUDIO_FILES[tk]);
+gameAudio.volume=1;
+gameAudio.preload='auto';
+gameAudio.load(); /* start buffering */
 let c=3;const ce=document.createElement('div');ce.style.cssText='position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);font-family:Bebas Neue;font-size:90px;color:#ffea00;z-index:20;text-shadow:0 0 30px rgba(255,234,0,.4);pointer-events:none';ap.appendChild(ce);
 await new Promise(rs=>{const cd=setInterval(()=>{ce.textContent=c;ce.style.animation='none';ce.offsetHeight;ce.style.animation='fp .55s ease forwards';c--;if(c<0){clearInterval(cd);ce.remove();rs();}},650);});
 G.p=true;
@@ -319,9 +325,9 @@ const LEAD_IN=3000;
 G.td=G.td.map(n=>[n[0]+LEAD_IN,n[1],n[2]]);
 G.du=G.du+(LEAD_IN/1000);
 G.ss=performance.now();
-/* Music starts immediately after countdown */
-if(ax&&ax.state==='suspended')ax.resume();
-if(!pA(tk))startSynthBeat(140);
+/* Music starts immediately after countdown using pre-created element */
+currentTrack=gameAudio;
+try{const pp=currentTrack.play();if(pp)pp.catch(e=>console.warn('Game audio blocked:',e));}catch(e){}
 uH();lp();}
 function eG(){G.p=false;sA();stopSynthBeat();cancelAnimationFrame(rf);G.ac.forEach(n=>n.e.remove());G.ac=[];const hc2=G.h.p+G.h.g+G.h.gd,ac=G.tn>0?(hc2/G.tn)*100:0;let gr,gc;if(ac>=95){gr='S';gc='#ffea00';}else if(ac>=85){gr='A';gc='#00e676';}else if(ac>=70){gr='B';gc='#2979ff';}else if(ac>=55){gr='C';gc='#ff9100';}else{gr='D';gc='#ff1744';}$('rg').textContent=gr;$('rg').style.color=gc;$('rs').textContent=G.sc.toLocaleString();$('rp').textContent=G.h.p;$('rgt').textContent=G.h.g;$('rgd').textContent=G.h.gd;$('rm').textContent=G.h.m;$('rc').textContent=G.mx;$('ra').textContent=Math.round(ac)+'%';sS('results-screen');showScoreboard(G.tk,G.sc);}
 
