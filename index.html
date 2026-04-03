@@ -218,7 +218,7 @@ function pA(k,offset){
     return true;
   }catch(e){console.warn('Play failed',e);return false;}
 }
-function sA(){if(currentTrack){try{currentTrack.pause();currentTrack.src='';currentTrack=null;}catch(e){}}}
+function sA(){if(currentTrack){try{currentTrack.pause();}catch(e){}currentTrack=null;}}
 
 /* Menu music — play Arena quietly on loop */
 function startMenuMusic(){
@@ -234,8 +234,6 @@ function startMenuMusic(){
 function stopMenuMusic(){
   if(menuTrack){
     try{menuTrack.pause();}catch(e){}
-    try{menuTrack.src='';}catch(e){}
-    try{menuTrack.load();}catch(e){} /* force release */
     menuTrack=null;
   }
 }
@@ -378,8 +376,22 @@ function resumeGame(){
   const pauseDuration=performance.now()-G.pauseStart;
   G.ss+=pauseDuration;
   if(G.lo)G.lt+=pauseDuration;
-  /* Resume track audio */
-  if(currentTrack)try{currentTrack.play();}catch(e){}
+  /* Resume track audio if it was playing, or reschedule if still in lead-in */
+  if(currentTrack){
+    try{currentTrack.play();}catch(e){}
+  } else {
+    /* Audio hasn't started yet (paused during lead-in). Calculate remaining lead-in time. */
+    const elapsed=G.songElapsed*1000;
+    const LEAD_IN=3000;
+    const remaining=LEAD_IN-elapsed;
+    if(remaining>0){
+      G.audioTimeout=setTimeout(()=>{if(!G.p||G.paused)return;if(!pA(G.tk))startSynthBeat(140);},remaining);
+    } else {
+      /* Lead-in passed, start audio at the right offset */
+      const audioOffset=(elapsed-LEAD_IN)/1000;
+      if(!pA(G.tk,audioOffset))startSynthBeat(140);
+    }
+  }
   lp();
 }
 function quitToMenu(){
