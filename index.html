@@ -248,7 +248,7 @@ function hS(l){if(!ax)return;const fr=[82.41,110,146.83,196],t=ax.currentTime;
 const o=ax.createOscillator(),o2=ax.createOscillator(),g=ax.createGain(),w=ax.createWaveShaper();
 o.type='sawtooth';o.frequency.value=fr[l];o2.type='square';o2.frequency.value=fr[l]*1.005;
 const c=new Float32Array(256);for(let i=0;i<256;i++){const x=(i/128)-1;c[i]=(Math.PI+180*x)/(Math.PI+180*Math.abs(x));}
-w.curve=c;g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+.25);
+w.curve=c;g.gain.setValueAtTime(.04,t);g.gain.exponentialRampToValueAtTime(.001,t+.15);
 o.connect(w);o2.connect(w);w.connect(g).connect(ax.destination);o.start(t);o2.start(t);o.stop(t+.25);o2.stop(t+.25);}
 
 /* MISS SOUND — dull muted string clank */
@@ -277,15 +277,18 @@ function hY(){return ap.getBoundingClientRect().height*.84;}
 function spN(l,t,s){const e=document.createElement('div');e.className=`note l${l}${s?' star':''}${G.lo?' gold':''}`;ln[l].appendChild(e);G.ac.push({e,l,t,h:false,m:false,s});}
 function sFb(t,c){const f=document.createElement('div');f.className=`fbk ${c}`;f.textContent=t;ap.appendChild(f);setTimeout(()=>f.remove(),450);}
 function sFl(l){const tg=document.querySelectorAll('.ht')[l],r=tg.getBoundingClientRect(),cr=ap.getBoundingClientRect(),f=document.createElement('div');f.className=`hfl l${l}`;f.style.left=(r.left-cr.left+r.width/2)+'px';f.style.top=(r.top-cr.top+r.height/2)+'px';ap.appendChild(f);setTimeout(()=>f.remove(),220);}
-function hN(lane){const hy=hY(),st=performance.now()-G.ss;let cl=null,cd=Infinity;for(const n of G.ac){if(n.l!==lane||n.h||n.m)continue;const ny=hy-(n.t-st)*G.ns/1000*60,d=Math.abs(n.t-st);if(Math.abs(ny-hy)<80&&d<cd){cd=d;cl=n;}}if(!cl)return;cl.h=true;cl.e.remove();let pt,fb,ft;if(cd<40){pt=100;fb='PERFECT';ft='perfect';G.h.p++;if(navigator.vibrate)navigator.vibrate(8);}else if(cd<85){pt=75;fb='GREAT';ft='great';G.h.g++;if(navigator.vibrate)navigator.vibrate(12);}else{pt=50;fb='GOOD';ft='good';G.h.gd++;if(navigator.vibrate)navigator.vibrate(15);}G.co++;if(G.co>G.mx)G.mx=G.co;G.mu=Math.min(4,1+Math.floor(G.co/10));G.sc+=pt*(G.lo?G.mu*2:G.mu);if(cl.s)G.lp=Math.min(100,G.lp+20);else G.lp=Math.min(100,G.lp+2);/* Streak milestone buzz + visual */if(G.co===10||G.co===25||G.co===50||G.co===100||G.co===200){if(navigator.vibrate)navigator.vibrate([30,20,30]);const msgs={10:'ON FIRE',25:'BLAZING',50:'UNSTOPPABLE',100:'LEGENDARY',200:'GODLIKE'};const sm=document.createElement('div');sm.className='streak-msg';sm.textContent=msgs[G.co]||'STREAK '+G.co;ap.appendChild(sm);setTimeout(()=>sm.remove(),800);}sFb(fb,ft);sFl(lane);hS(lane);hc[lane].classList.add('on');setTimeout(()=>hc[lane].classList.remove('on'),100);uH();}
-function mN(n){if(n.h||n.m)return;n.m=true;n.e.remove();G.h.m++;G.co=0;G.mu=1;G.lp=Math.max(0,G.lp-15);sFb('MISS','miss');mS();ap.classList.add('shk');setTimeout(()=>ap.classList.remove('shk'),100);try{navigator.vibrate([60,20,60]);}catch(e){}uH();}
-function aL(){if(G.lp<50||G.lo)return;G.lo=true;G.lt=performance.now();G.lp=0;$('lpa').classList.remove('rdy');$('lpa').classList.add('act');$('lpa').textContent='2X!';$('lpb').classList.remove('full');$('lpw').classList.remove('ready');$('hb').style.background='linear-gradient(90deg,gold,#fff,gold)';$('hb').style.boxShadow='0 0 18px rgba(255,215,0,.4)';/* Turn all notes gold */document.querySelectorAll('.note').forEach(n=>n.classList.add('gold'));}
-function uH(){$('sc').textContent=G.sc.toLocaleString();$('cv').textContent=G.co>1?G.co:'';const m=G.lo?G.mu*2:G.mu;$('mv').textContent='x'+m;$('mv').style.color=G.lo?'gold':'rgba(255,255,255,.4)';$('sf').style.opacity=G.co>=10?Math.min(1,(G.co-10)/25):0;$('cwd').style.opacity=.3+Math.min(1,G.co/25)*.7;$('lpf').style.height=G.lp+'%';if(G.lp>=50&&!G.lo){$('lpa').classList.add('rdy');$('lpa').textContent='GO!';$('lpb').classList.add('full');$('lpw').classList.add('ready');}else if(!G.lo){$('lpa').classList.remove('rdy');$('lpa').textContent='POWER';$('lpb').classList.remove('full');$('lpw').classList.remove('ready');}}
-function lp(){if(!G.p)return;const nw=performance.now(),st=nw-G.ss,hy=hY(),ld=(hy/(G.ns*60))*1000;if(G.lo&&nw-G.lt>8000){G.lo=false;$('lpa').classList.remove('act');$('lpa').textContent='POWER';$('lpb').classList.remove('full');$('hb').style.background='linear-gradient(90deg,var(--c1),var(--c2),var(--c3),var(--c4))';$('hb').style.boxShadow='0 0 8px rgba(255,255,255,.1)';document.querySelectorAll('.note.gold').forEach(n=>n.classList.remove('gold'));uH();}while(G.ni<G.td.length){const nd=G.td[G.ni];if(nd[0]-st>ld)break;spN(nd[1],nd[0],nd[2]||false);G.ni++;}for(let i=G.ac.length-1;i>=0;i--){const n=G.ac[i];if(n.h||n.m){G.ac.splice(i,1);continue;}const y=hy+((st-n.t)*G.ns*60/1000);n.e.style.top=(y-11)+'px';if(y>hy+70){mN(n);G.ac.splice(i,1);}}uF(st);$('pr').style.width=Math.min(100,(st/(G.du*1000))*100)+'%';if(st>G.du*1000+2000){eG();return;}rf=requestAnimationFrame(lp);}
+function hN(lane){const hy=hY(),st=performance.now()-G.ss;let cl=null,cd=Infinity;for(const n of G.ac){if(n.l!==lane||n.h||n.m)continue;const ny=hy-(n.t-st)*G.ns/1000*60,d=Math.abs(n.t-st);if(Math.abs(ny-hy)<80&&d<cd){cd=d;cl=n;}}if(!cl)return;cl.h=true;cl.e.remove();let pt,fb,ft;if(cd<40){pt=100;fb='PERFECT';ft='perfect';G.h.p++;if(navigator.vibrate)navigator.vibrate(8);}else if(cd<85){pt=75;fb='GREAT';ft='great';G.h.g++;if(navigator.vibrate)navigator.vibrate(12);}else{pt=50;fb='GOOD';ft='good';G.h.gd++;if(navigator.vibrate)navigator.vibrate(15);}G.co++;if(G.co>G.mx)G.mx=G.co;G.mu=Math.min(4,1+Math.floor(G.co/10));G.sc+=pt*(G.lo?G.mu*2:G.mu);if(!G.lo){if(cl.s)G.lp=Math.min(100,G.lp+20);else G.lp=Math.min(100,G.lp+2);}/* Streak milestone buzz + visual */if(G.co===10||G.co===25||G.co===50||G.co===100||G.co===200){if(navigator.vibrate)navigator.vibrate([30,20,30]);const msgs={10:'ON FIRE',25:'BLAZING',50:'UNSTOPPABLE',100:'LEGENDARY',200:'GODLIKE'};const sm=document.createElement('div');sm.className='streak-msg';sm.textContent=msgs[G.co]||'STREAK '+G.co;ap.appendChild(sm);setTimeout(()=>sm.remove(),800);}sFb(fb,ft);sFl(lane);hS(lane);hc[lane].classList.add('on');setTimeout(()=>hc[lane].classList.remove('on'),100);uH();}
+function mN(n){if(n.h||n.m)return;n.m=true;n.e.remove();G.h.m++;G.co=0;G.mu=1;G.lp=0;sFb('MISS','miss');mS();ap.classList.add('shk');setTimeout(()=>ap.classList.remove('shk'),100);try{navigator.vibrate([60,20,60]);}catch(e){}uH();}
+function aL(){if(G.lp<100||G.lo)return;G.lo=true;G.lt=performance.now();$('lpa').classList.remove('rdy');$('lpa').classList.add('act');$('lpa').textContent='2X!';/* Keep meter pulsating gold during LP */$('hb').style.background='linear-gradient(90deg,gold,#fff,gold)';$('hb').style.boxShadow='0 0 18px rgba(255,215,0,.4)';/* Turn all notes gold */document.querySelectorAll('.note').forEach(n=>n.classList.add('gold'));}
+function uH(){$('sc').textContent=G.sc.toLocaleString();$('cv').textContent=G.co>1?G.co:'';const m=G.lo?G.mu*2:G.mu;$('mv').textContent='x'+m;$('mv').style.color=G.lo?'gold':'rgba(255,255,255,.4)';$('sf').style.opacity=G.co>=10?Math.min(1,(G.co-10)/25):0;$('cwd').style.opacity=.3+Math.min(1,G.co/25)*.7;$('lpf').style.height=G.lp+'%';if(G.lp>=100&&!G.lo){$('lpa').classList.add('rdy');$('lpa').textContent='GO!';$('lpb').classList.add('full');$('lpw').classList.add('ready');}else if(!G.lo){$('lpa').classList.remove('rdy');$('lpa').textContent='POWER';$('lpb').classList.remove('full');$('lpw').classList.remove('ready');}}
+function lp(){if(!G.p)return;const nw=performance.now(),st=nw-G.ss,hy=hY(),ld=(hy/(G.ns*60))*1000;if(G.lo&&nw-G.lt>8000){G.lo=false;G.lp=0;$('lpa').classList.remove('act');$('lpa').textContent='POWER';$('lpb').classList.remove('full');$('lpw').classList.remove('ready');$('hb').style.background='linear-gradient(90deg,var(--c1),var(--c2),var(--c3),var(--c4))';$('hb').style.boxShadow='0 0 8px rgba(255,255,255,.1)';document.querySelectorAll('.note.gold').forEach(n=>n.classList.remove('gold'));uH();}while(G.ni<G.td.length){const nd=G.td[G.ni];if(nd[0]-st>ld)break;spN(nd[1],nd[0],nd[2]||false);G.ni++;}for(let i=G.ac.length-1;i>=0;i--){const n=G.ac[i];if(n.h||n.m){G.ac.splice(i,1);continue;}const y=hy+((st-n.t)*G.ns*60/1000);n.e.style.top=(y-11)+'px';if(y>hy+70){mN(n);G.ac.splice(i,1);}}uF(st);$('pr').style.width=Math.min(100,(st/(G.du*1000))*100)+'%';if(st>G.du*1000+2000){eG();return;}rf=requestAnimationFrame(lp);}
 function sS(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
 async function sG(tk){R();iax();G.tk=tk;
-/* Stop menu music immediately on track tap */
+/* Stop menu music and start game audio SILENTLY right now (user gesture context) */
 stopMenuMusic();sA();
+currentTrack=new Audio(AUDIO_FILES[tk]);
+currentTrack.volume=0;
+try{const pp=currentTrack.play();if(pp)pp.catch(e=>{});}catch(e){}
 
 const df=document.querySelector('.dp.sel')?.dataset.d||'medium';const b=T[tk];let ns=b.notes.map(n=>[...n]);switch(df){case'easy':G.ns=2.0;ns=ns.filter((_,i)=>i%3===0);break;case'hard':G.ns=4.8;const ex=[];for(let i=0;i<ns.length-1;i++){ex.push(ns[i]);if(ns[i+1][0]-ns[i][0]>400&&Math.random()<.25)ex.push([Math.round((ns[i][0]+ns[i+1][0])/2),(ns[i][1]+2)%4]);}ex.push(ns[ns.length-1]);ns=ex;break;default:G.ns=3.2;ns=ns.filter((_,i)=>i%3!==2);}for(let i=0;i<ns.length;i++){if(i%20<4&&i%20===0){for(let j=i;j<Math.min(i+4,ns.length);j++)ns[j][2]=true;}}/* Limit to 90 seconds */ns=ns.filter(n=>n[0]<=90000);G.td=ns;G.tn=ns.length;G.du=Math.min(b.d,90);
 /* INTRO SEQUENCE: Character on stage -> track name -> pan to fretboard -> PLAYER READY? -> 3-2-1 */
@@ -317,15 +320,15 @@ readyEl.remove();
 let c=3;const ce=document.createElement('div');ce.style.cssText='position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);font-family:Bebas Neue;font-size:90px;color:#ffea00;z-index:20;text-shadow:0 0 30px rgba(255,234,0,.4);pointer-events:none';ap.appendChild(ce);
 await new Promise(rs=>{const cd=setInterval(()=>{ce.textContent=c;ce.style.animation='none';ce.offsetHeight;ce.style.animation='fp .55s ease forwards';c--;if(c<0){clearInterval(cd);ce.remove();rs();}},650);});
 G.p=true;
-/* 3-second lead-in with delayed audio start (the approach that was working) */
+/* Music starts NOW. Notes offset by 3s so first note arrives 3s into the song. */
 const LEAD_IN=3000;
 G.td=G.td.map(n=>[n[0]+LEAD_IN,n[1],n[2]]);
 G.du=G.du+(LEAD_IN/1000);
 G.ss=performance.now();
-/* Start audio after lead-in delay */
-G.audioTimeout=setTimeout(()=>{if(!G.p||G.paused)return;pA(tk);},LEAD_IN);
+/* Unmute and restart track from beginning */
+if(currentTrack){try{currentTrack.currentTime=0;currentTrack.volume=1;}catch(e){}}
 uH();lp();}
-function eG(){G.p=false;sA();stopSynthBeat();if(G.audioTimeout)clearTimeout(G.audioTimeout);cancelAnimationFrame(rf);G.ac.forEach(n=>n.e.remove());G.ac=[];const hc2=G.h.p+G.h.g+G.h.gd,ac=G.tn>0?(hc2/G.tn)*100:0;let gr,gc;if(ac>=95){gr='S';gc='#ffea00';}else if(ac>=85){gr='A';gc='#00e676';}else if(ac>=70){gr='B';gc='#2979ff';}else if(ac>=55){gr='C';gc='#ff9100';}else{gr='D';gc='#ff1744';}$('rg').textContent=gr;$('rg').style.color=gc;$('rs').textContent=G.sc.toLocaleString();$('rp').textContent=G.h.p;$('rgt').textContent=G.h.g;$('rgd').textContent=G.h.gd;$('rm').textContent=G.h.m;$('rc').textContent=G.mx;$('ra').textContent=Math.round(ac)+'%';sS('results-screen');showScoreboard(G.tk,G.sc);}
+function eG(){G.p=false;sA();stopSynthBeat();cancelAnimationFrame(rf);G.ac.forEach(n=>n.e.remove());G.ac=[];const hc2=G.h.p+G.h.g+G.h.gd,ac=G.tn>0?(hc2/G.tn)*100:0;let gr,gc;if(ac>=95){gr='S';gc='#ffea00';}else if(ac>=85){gr='A';gc='#00e676';}else if(ac>=70){gr='B';gc='#2979ff';}else if(ac>=55){gr='C';gc='#ff9100';}else{gr='D';gc='#ff1744';}$('rg').textContent=gr;$('rg').style.color=gc;$('rs').textContent=G.sc.toLocaleString();$('rp').textContent=G.h.p;$('rgt').textContent=G.h.g;$('rgd').textContent=G.h.gd;$('rm').textContent=G.h.m;$('rc').textContent=G.mx;$('ra').textContent=Math.round(ac)+'%';sS('results-screen');showScoreboard(G.tk,G.sc);}
 
 /* HIGH SCORE SYSTEM */
 function getScores(tk){try{return JSON.parse(localStorage.getItem('fl_scores_'+tk)||'[]');}catch(e){return[];}}
@@ -369,24 +372,19 @@ function pauseGame(){
   cancelAnimationFrame(rf);
   if(currentTrack)try{currentTrack.pause();}catch(e){}
   stopSynthBeat();
-  if(G.audioTimeout)clearTimeout(G.audioTimeout);
   G.songElapsed=(G.pauseStart-G.ss)/1000;
   $('pause-overlay').classList.add('active');
+  startMenuMusic(); /* menu music during pause */
 }
 function resumeGame(){
   if(!G.paused)return;
   G.paused=false;
   $('pause-overlay').classList.remove('active');
+  stopMenuMusic(); /* stop menu music, back to game */
   const pauseDuration=performance.now()-G.pauseStart;
   G.ss+=pauseDuration;
   if(G.lo)G.lt+=pauseDuration;
-  /* Resume track audio, or reschedule if paused during lead-in */
   if(currentTrack){try{currentTrack.play();}catch(e){}}
-  else{
-    const elapsed=G.songElapsed*1000;const remaining=3000-elapsed;
-    if(remaining>0){G.audioTimeout=setTimeout(()=>{if(!G.p||G.paused)return;pA(G.tk);},remaining);}
-    else{pA(G.tk,(elapsed-3000)/1000);}
-  }
   lp();
 }
 function quitToMenu(){
